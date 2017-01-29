@@ -319,6 +319,10 @@ void PktAnalyzer::analyzer(Packet &pkt)
 	_logger.debug("Got HTTP protocol");
 
 	std::string host((char *)&flow->host_server_name[0]);
+	std::string uri_o(flow->http.url ? flow->http.url : "");
+	std::string add_param;
+	std::string uri_encoded;
+	std::string uri_reserved=";,/?:@&=+$";
 	if((flow->http.method == HTTP_METHOD_GET || flow->http.method == HTTP_METHOD_POST || flow->http.method == HTTP_METHOD_HEAD) && !host.empty())
 	{
 		int dot_del=0;
@@ -358,14 +362,16 @@ void PktAnalyzer::analyzer(Packet &pkt)
 		_logger.debug("Host seek occupied %ld us",sw.elapsed());
 		if(found)
 		{
-			_logger.debug("Host %s present in domain (file line %d) list from ip %s", host, match.id, src_ip->toString());
-			std::string add_param;
+			_logger.debug("Host %s present in domain (file line %u) list from ip %s", host, match.id, src_ip->toString());
 			switch (_config.add_p_type)
 			{
 				case A_TYPE_ID: add_param="id="+std::to_string(match.id);
 						break;
-				case A_TYPE_URL: add_param="url="+host;
-						break;
+				case A_TYPE_URL:
+				    Poco::URI::encode(uri_o, uri_reserved, uri_encoded);
+				    add_param="url="+uri_encoded;
+				    _logger.debug("Params for redirect: '%s'", add_param);
+				    break;
 				default: break;
 			}
 			SenderTask::queue.enqueueNotification(new RedirectNotification(tcp_src_port, tcp_dst_port, src_ip.get(), dst_ip.get(),/*acknum*/ tcph->ack_seq, /*seqnum*/ tcph->seq,/* flag psh */ (tcph->psh ? 1 : 0 ),add_param));
@@ -376,7 +382,6 @@ void PktAnalyzer::analyzer(Packet &pkt)
 		sw.reset();
 		sw.start();
 		found=false;
-		std::string uri_o(flow->http.url ? flow->http.url : "");
 		if(flow->http.url)
 		{
 			std::string uri;
@@ -416,14 +421,16 @@ void PktAnalyzer::analyzer(Packet &pkt)
 			if(found)
 			{
 				_logger.debug("URL %s present in url (file pos %u) list from ip %s",uri,match.id,src_ip->toString());
-				std::string add_param;
 				switch (_config.add_p_type)
 				{
 					case A_TYPE_ID: add_param="id="+std::to_string(match.id);
-							break;
-					case A_TYPE_URL: add_param="url="+uri;
-							break;
-						default: break;
+					    break;
+					case A_TYPE_URL: 
+					    Poco::URI::encode(uri, uri_reserved, uri_encoded);
+					    add_param="url="+uri_encoded;
+					    _logger.debug("Params for redirect: '%s'", uri_encoded);
+					    break;
+					default: break;
 				}
 				SenderTask::queue.enqueueNotification(new RedirectNotification(tcp_src_port, tcp_dst_port,src_ip.get(),dst_ip.get(),/*acknum*/ tcph->ack_seq, /*seqnum*/ tcph->seq,/* flag psh */ (tcph->psh ? 1 : 0 ),add_param));
 				_parent->inc_redirected_urls();
