@@ -1,0 +1,10 @@
+--- nDPI/configure.ac	2017-01-29 20:08:11.867046827 +0300
++++ nDPI/configure.ac	2017-01-29 20:07:21.966664404 +0300
+@@ -1,6 +1,7 @@
+ AC_INIT([libndpi], [1.8.0])
+ 
+ AC_CONFIG_MACRO_DIR([m4])
++AC_CONFIG_AUX_DIR([.])
+ 
+ AM_INIT_AUTOMAKE([foreign subdir-objects])
+ 

@@ -204,7 +204,13 @@ void PktAnalyzer::analyzer(Packet &pkt)
 	struct ndpi_flow_struct *flow=nw.get_flow();
 
 	uint32_t current_tickt = 0;
+	
 	ndpi_protocol protocol = ndpi_detection_process_packet(nfqFilter::my_ndpi_struct, flow, full_packet, size, current_tickt, nw.get_src(), nw.get_dst());
+
+	if(protocol.protocol == NDPI_PROTOCOL_UNKNOWN)
+	{
+		protocol = ndpi_detection_giveup(nfqFilter::my_ndpi_struct, flow);
+	}
 
 	if(protocol.protocol == NDPI_PROTOCOL_UNKNOWN)
 	{

@@ -175,6 +175,7 @@ void nfqFilter::initialize(Application& self)
 	}
 	if(!_protocolsFile.empty())
 	{
+		logger().debug("Loading nDPI protocols from file %s", _protocolsFile);
 		ndpi_load_protocols_file(my_ndpi_struct, (char *)_protocolsFile.c_str());
 	}
 	// Load sizes of main parsing structures

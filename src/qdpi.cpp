@@ -73,14 +73,15 @@ void debug_printf(u_int32_t protocol, void *id_struct, ndpi_log_level_t log_leve
 
 struct ndpi_detection_module_struct* init_ndpi()
 {
-	u_int32_t detection_tick_resolution = 1000;
-	struct ndpi_detection_module_struct* my_ndpi_struct = ndpi_init_detection_module(detection_tick_resolution, malloc_wrapper, free_wrapper, debug_printf);
+	set_ndpi_malloc(malloc_wrapper);
+	set_ndpi_free(free_wrapper);
+	struct ndpi_detection_module_struct* my_ndpi_struct = ndpi_init_detection_module();
 
 	if (my_ndpi_struct == NULL) {
 		return NULL;
 	}
 
-//	my_ndpi_struct->http_dont_dissect_response=1;
+	my_ndpi_struct->http_dont_dissect_response = 0;
 
 	NDPI_PROTOCOL_BITMASK all;
 

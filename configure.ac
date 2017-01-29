@@ -5,7 +5,7 @@ AC_PREREQ([2.69])
 AC_INIT(nfqfilter, 0.3, max1976@mail.ru)
 
 NDPI_HOME=./nDPI
-NDPI_GIT_VERSION=1.7-stable
+NDPI_GIT_VERSION=dev
 
 AM_INIT_AUTOMAKE()
 
@@ -45,9 +45,9 @@ AC_MSG_CHECKING([for debug enabled])
 
 
 if test x"$debug" = x"true"; then
-    CXXFLAGS="$CXXFLAGS -std=c++0x -O0 -g -Wall -pthread"
+    CXXFLAGS="$CXXFLAGS -std=c++11 -O0 -g -Wall -pthread -msse -msse2 -msse3 -mssse3"
 else
-    CXXFLAGS="$CXXFLAGS -std=c++0x -O2 -pthread"
+    CXXFLAGS="$CXXFLAGS -std=c++11 -O2 -Wall -pthread -msse -msse2 -msse3 -mssse3"
 fi
 
 AC_COMPILE_IFELSE([AC_LANG_SOURCE(
@@ -140,12 +140,12 @@ if test -d "$NDPI_HOME" ; then :
 else
     AC_MSG_RESULT(not found)
     AC_MSG_NOTICE(Getting nDPI from git)
-    git clone -b $NDPI_GIT_VERSION https://github.com/ntop/nDPI.git $NDPI_HOME; cd $NDPI_HOME; patch -p1 < ../nDPI-1.7-bugfixes.patch ; cd -
+    git clone -b $NDPI_GIT_VERSION https://github.com/ntop/nDPI.git $NDPI_HOME; cd $NDPI_HOME; git checkout f51fef6 ; patch -p1 < ../ndpi-ac-config-aux-dir.patch; patch -p1 < ../ndpi-ssl.patch; patch -p1 < ../ndpi-ssl-2.patch ; cd -
     AC_MSG_CHECKING(for nDPI $NDPI_HOME)
     if test -d "$NDPI_HOME" ; then :
 	AC_MSG_RESULT(found in $NDPI_HOME)
     else
-	AC_MSG_ERROR(Install nDPI 1.7-stable: git clone -b $NDPI_GIT_VERSION https://github.com/ntop/nDPI.git $NDPI_HOME; cd $NDPI_HOME; patch -p1 < ../nDPI-1.7-bugfixes.patch ; ./autogen.sh; make; cd - )
+	AC_MSG_ERROR(Install nDPI dev: git clone -b $NDPI_GIT_VERSION https://github.com/ntop/nDPI.git $NDPI_HOME; cd $NDPI_HOME; git checkout f51fef6 ;  patch -p1 < ../ndpi-ac-config-aux-dir.patch; patch -p1 < ../ndpi-ssl.patch ; patch -p1 < ../ndpi-ssl-2.patch ; ./autogen.sh; make; cd - )
     fi
 fi
 
@@ -174,5 +174,6 @@ AC_LINK_IFELSE(
 )
 AC_MSG_RESULT(yes)
 CXXFLAGS="$save_flags"
+
 
 AC_OUTPUT(Makefile src/Makefile include/Makefile)
