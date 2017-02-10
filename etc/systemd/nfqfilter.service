@@ -8,6 +8,7 @@ Type=forking
 ExecStart=/usr/local/bin/nfqfilter --daemon --pidfile=/var/run/nfqfilter.pid -c /usr/local/etc/nfqfilter.ini
 PIDFile=/var/run/nfqfilter.pid
 ExecReload=/bin/kill -HUP $MAINPID
+Restart=always
 
 [Install]
 WantedBy=multi-user.target
