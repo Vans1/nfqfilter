@@ -315,12 +315,6 @@ void PktAnalyzer::analyzer(Packet &pkt)
 		nfq_set_verdict(qh,id,NF_ACCEPT,0,NULL);
 		return ;
 	}
-	if(protocol.master_protocol != NDPI_PROTOCOL_HTTP && protocol.protocol != NDPI_PROTOCOL_HTTP && protocol.protocol != NDPI_PROTOCOL_DIRECT_DOWNLOAD_LINK)
-	{
-		_logger.debug("Not http protocol. Protocol is %hu/%hu from %s:%d to %s:%d",protocol.master_protocol,protocol.protocol,src_ip->toString(),tcp_src_port,dst_ip->toString(),tcp_dst_port);
-		nfq_set_verdict(qh,id,NF_ACCEPT,0,NULL);
-		return ;
-	}
 
 	_logger.debug("Got HTTP protocol");
 
@@ -446,6 +440,13 @@ void PktAnalyzer::analyzer(Packet &pkt)
 		}
 	}
 	nfq_set_verdict(qh,id,NF_ACCEPT,0,NULL);
+		
+		if(protocol.master_protocol != NDPI_PROTOCOL_HTTP && protocol.protocol != NDPI_PROTOCOL_HTTP && protocol.protocol != NDPI_PROTOCOL_DIRECT_DOWNLOAD_LINK)
+		{
+			_logger.debug("Not http protocol. Protocol is %hu/%hu from %s:%d to %s:%d",protocol.master_protocol,protocol.protocol,src_ip->toString(),tcp_src_port,dst_ip->toString(),tcp_dst_port);
+			nfq_set_verdict(qh,id,NF_ACCEPT,0,NULL);
+			return ;
+		}
 }
 
 void PktAnalyzer::run()
