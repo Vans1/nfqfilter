@@ -315,20 +315,15 @@ void PktAnalyzer::analyzer(Packet &pkt)
 		nfq_set_verdict(qh,id,NF_ACCEPT,0,NULL);
 		return ;
 	}
-	if(protocol.master_protocol != NDPI_PROTOCOL_HTTP && protocol.protocol != NDPI_PROTOCOL_HTTP && protocol.protocol != NDPI_PROTOCOL_DIRECT_DOWNLOAD_LINK)
-	{
-		_logger.debug("Not http protocol. Protocol is %hu/%hu from %s:%d to %s:%d",protocol.master_protocol,protocol.protocol,src_ip->toString(),tcp_src_port,dst_ip->toString(),tcp_dst_port);
-		nfq_set_verdict(qh,id,NF_ACCEPT,0,NULL);
-		return ;
-	}
 
 	_logger.debug("Got HTTP protocol");
-
 	std::string host((char *)&flow->host_server_name[0]);
 	std::string uri_o(flow->http.url ? flow->http.url : "");
 	std::string add_param;
 	std::string uri_encoded;
 	std::string uri_reserved=";,/?:@&=+$";
+//                _logger.error("http protocol. Protocol is %hu/%hu from %s:%d to %s:%d",protocol.master_protocol,protocol.protocol,src_ip->toString(),tcp_src_port,dst_ip->toString(),tcp_dst_port);
+
 	if((flow->http.method == HTTP_METHOD_GET || flow->http.method == HTTP_METHOD_POST || flow->http.method == HTTP_METHOD_HEAD) && !host.empty())
 	{
 		int dot_del=0;
@@ -446,6 +441,22 @@ void PktAnalyzer::analyzer(Packet &pkt)
 		}
 	}
 	nfq_set_verdict(qh,id,NF_ACCEPT,0,NULL);
+
+	if(protocol.master_protocol != NDPI_PROTOCOL_HTTP && protocol.protocol != NDPI_PROTOCOL_HTTP && protocol.protocol != NDPI_PROTOCOL_DIRECT_DOWNLOAD_LINK)
+	{
+		_logger.debug("Not http protocol. Protocol is %hu/%hu from %s:%d to %s:%d",protocol.master_protocol,protocol.protocol,src_ip->toString(),tcp_src_port,dst_ip->toString(),tcp_dst_port);
+		nfq_set_verdict(qh,id,NF_ACCEPT,0,NULL);
+		return ;
+	}
+
+        //Костыль для фрагментированных пакетов
+//      if(host.empty())
+//      {
+//      std::string empty_str;
+//      SenderTask::queue.enqueueNotification(new RedirectNotification(tcp_src_port, tcp_dst_port,src_ip.get(), dst_ip.get(),/*acknum*/ tcph->ack_seq, /*seqnum*/ tcph->seq,/* flag psh */ (tcph->psh ? 1 : 0 ),empty_str,true));
+//      nfq_set_verdict(qh,id,NF_ACCEPT,0,NULL);
+//      return ;
+//      }
 }
 
 void PktAnalyzer::run()
